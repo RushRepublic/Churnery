@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Churnery Presentation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    background: #000;
+  }
+  #stage {
+    display: block;
+  }
+  .slide {
+    display: block;
+    width: 100%;
+  }
+  video.slide {
+    object-fit: cover;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <video class="slide" src="1.mp4" muted loop playsinline preload="metadata"></video>
+  <img class="slide" src="Churnery-01.jpg" alt="">
+  <video class="slide" src="2.mp4" muted loop playsinline preload="metadata"></video>
+  <img class="slide" src="Churnery-02.jpg" alt="">
+  <video class="slide" src="3.mp4" muted loop playsinline preload="metadata"></video>
+  <img class="slide" src="Churnery-03.jpg" alt="">
+  <video class="slide" src="4.mp4" muted loop playsinline preload="metadata"></video>
+  <img class="slide" src="Churnery-04.jpg" alt="">
+  <img class="slide" src="Churnery-05.jpg" alt="">
+</div>
+
+<script>
+  const videos = Array.from(document.querySelectorAll('video.slide'));
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target;
+      if (entry.isIntersecting) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, { threshold: 0.25 });
+
+  videos.forEach(video => observer.observe(video));
+</script>
+</body>
+</html>
