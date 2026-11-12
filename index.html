@@ -43,11 +43,13 @@
       const video = entry.target;
       if (entry.isIntersecting) {
         video.play().catch(() => {});
+        video.muted = false;
       } else {
+        video.muted = true;
         video.pause();
       }
     });
-  }, { threshold: 0.25 });
+  }, { threshold: 0.6 });
 
   videos.forEach(video => observer.observe(video));
 </script>
