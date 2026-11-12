@@ -24,15 +24,15 @@
 </head>
 <body>
 <div id="stage">
-  <video class="slide" src="1.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <video class="slide" data-src="1.mp4" muted loop playsinline preload="none"></video>
   <img class="slide" src="Churnery-01.jpg" alt="">
-  <video class="slide" src="2.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <video class="slide" data-src="2.mp4" muted loop playsinline preload="none"></video>
   <img class="slide" src="Churnery-02-resized.jpg" alt="">
-  <video class="slide" src="3.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <video class="slide" data-src="3.mp4" muted loop playsinline preload="none"></video>
   <img class="slide" src="Churnery-03.jpg" alt="">
-  <video class="slide" src="4.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <video class="slide" data-src="4.mp4" muted loop playsinline preload="none"></video>
   <img class="slide" src="Churnery-04.jpg" alt="">
-  <video class="slide" src="5.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <video class="slide" data-src="5.mp4" muted loop playsinline preload="none"></video>
   <img class="slide" src="Churnery-05.jpg" alt="">
 </div>
 
@@ -52,10 +52,27 @@
     if (p && p.catch) p.catch(() => {});
   }
 
-  const observer = new IntersectionObserver((entries) => {
+  function ensureLoaded(video) {
+    if (!video.src && video.dataset.src) {
+      video.src = video.dataset.src;
+      video.load();
+    }
+  }
+
+  // Load each video shortly before it scrolls into view, instead of all at once.
+  const loadObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        ensureLoaded(entry.target);
+      }
+    });
+  }, { rootMargin: '100% 0px' });
+
+  const playObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const video = entry.target;
       if (entry.isIntersecting) {
+        ensureLoaded(video);
         if (hasInteracted) {
           video.muted = false;
         }
@@ -67,7 +84,13 @@
     });
   }, { threshold: 0.5 });
 
-  videos.forEach(video => observer.observe(video));
+  videos.forEach(video => {
+    loadObserver.observe(video);
+    playObserver.observe(video);
+  });
+
+  // First video should be ready immediately.
+  if (videos[0]) ensureLoaded(videos[0]);
 </script>
 </body>
 </html>
