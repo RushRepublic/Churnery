@@ -48,18 +48,27 @@
 
   function tryPlay(video) {
     const p = video.play();
-    if (p && p.catch) p.catch(() => {});
+    if (p && p.catch) {
+      p.catch(() => {
+        // Play was blocked (e.g. unmuted without real user activation).
+        // Fall back to muted so playback never gets stuck.
+        if (!video.muted) {
+          video.muted = true;
+          const retry = video.play();
+          if (retry && retry.catch) retry.catch(() => {});
+        }
+      });
+    }
   }
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const video = entry.target;
       if (entry.isIntersecting) {
-        tryPlay(video);
         if (hasInteracted) {
           video.muted = false;
-          tryPlay(video);
         }
+        tryPlay(video);
       } else {
         video.muted = true;
         video.pause();
@@ -67,14 +76,7 @@
     });
   }, { threshold: 0.6 });
 
-  videos.forEach(video => {
-    video.addEventListener('pause', () => {
-      const rect = video.getBoundingClientRect();
-      const inView = rect.top < window.innerHeight * 0.4 && rect.bottom > window.innerHeight * 0.6;
-      if (inView) tryPlay(video);
-    });
-    observer.observe(video);
-  });
+  videos.forEach(video => observer.observe(video));
 </script>
 </body>
 </html>
