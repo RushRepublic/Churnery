@@ -24,13 +24,13 @@
 </head>
 <body>
 <div id="stage">
-  <video class="slide" data-src="1.mp4" muted loop playsinline preload="none"></video>
+  <video class="slide" src="1.mp4" muted loop playsinline preload="metadata"></video>
   <img class="slide" src="Churnery-01.jpg" alt="">
-  <video class="slide" data-src="2.mp4" muted loop playsinline preload="none"></video>
+  <video class="slide" src="2.mp4" muted loop playsinline preload="metadata"></video>
   <img class="slide" src="Churnery-02-resized.jpg" alt="">
-  <video class="slide" data-src="3.mp4" muted loop playsinline preload="none"></video>
+  <video class="slide" src="3.mp4" muted loop playsinline preload="metadata"></video>
   <img class="slide" src="Churnery-03.jpg" alt="">
-  <video class="slide" data-src="4.mp4" muted loop playsinline preload="none"></video>
+  <video class="slide" src="4.mp4" muted loop playsinline preload="metadata"></video>
   <img class="slide" src="Churnery-04.jpg" alt="">
   <img class="slide" src="Churnery-05.jpg" alt="">
 </div>
@@ -51,46 +51,30 @@
     if (p && p.catch) p.catch(() => {});
   }
 
-  function ensureLoaded(video) {
-    if (!video.src && video.dataset.src) {
-      video.src = video.dataset.src;
-      video.load();
-    }
-  }
-
-  // Load each video shortly before it scrolls into view, instead of all at once.
-  const loadObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        ensureLoaded(entry.target);
-      }
-    });
-  }, { rootMargin: '100% 0px' });
-
-  const playObserver = new IntersectionObserver((entries) => {
+  const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const video = entry.target;
       if (entry.isIntersecting) {
-        ensureLoaded(video);
+        tryPlay(video);
         if (hasInteracted) {
           video.muted = false;
+          tryPlay(video);
         }
-        tryPlay(video);
       } else {
         video.muted = true;
         video.pause();
       }
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 0.6 });
 
   videos.forEach(video => {
-    loadObserver.observe(video);
-    playObserver.observe(video);
+    video.addEventListener('pause', () => {
+      const rect = video.getBoundingClientRect();
+      const inView = rect.top < window.innerHeight * 0.4 && rect.bottom > window.innerHeight * 0.6;
+      if (inView) tryPlay(video);
+    });
+    observer.observe(video);
   });
-
-  // First two videos should be ready immediately.
-  if (videos[0]) ensureLoaded(videos[0]);
-  if (videos[1]) ensureLoaded(videos[1]);
 </script>
 </body>
 </html>
